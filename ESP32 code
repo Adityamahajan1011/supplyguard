@@ -1,31 +1,78 @@
 #include "DHT.h"
 
-#define DHTPIN 4        // GPIO 4
-#define DHTTYPE DHT11   // DHT11 sensor
-
+// ── DHT11 CONFIG ──────────────────────────
+#define DHTPIN   4
+#define DHTTYPE  DHT11
 DHT dht(DHTPIN, DHTTYPE);
+
+// ── LED PINS ──────────────────────────────
+#define LED1 12    // Pole P-01
+#define LED2 13    // Pole P-02
+#define LED3 14    // Pole P-03
+
+// ── TIMING ────────────────────────────────
+const int TOGGLE_INTERVAL = 1000;  // ms between LED switches — change this to your liking
+
+// ── STATE ─────────────────────────────────
+int  activeLED = 0;
+unsigned long lastToggleTime = 0;
+bool ledState[3] = {false, false, false};
+
+void setLED(int index, bool state) {
+  int pins[3] = {LED1, LED2, LED3};
+  if (ledState[index] == state) return;
+  ledState[index] = state;
+  digitalWrite(pins[index], state ? HIGH : LOW);
+
+  // Report every state change immediately
+  if (state) {
+    Serial.print("POLE_BREAK:");
+    Serial.println(index);
+  } else {
+    Serial.print("POLE_OK:");
+    Serial.println(index);
+  }
+}
 
 void setup() {
   Serial.begin(115200);
   dht.begin();
-  Serial.println("DHT11 Temperature Monitoring Started...");
+
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2, OUTPUT);
+  pinMode(LED3, OUTPUT);
+
+  digitalWrite(LED1, LOW);
+  digitalWrite(LED2, LOW);
+  digitalWrite(LED3, LOW);
+
+  Serial.println("SupplyGuard ESP32 Ready");
 }
 
 void loop() {
-  float temperature = dht.readTemperature();  // Celsius
-  float humidity = dht.readHumidity();
+  unsigned long now = millis();
 
-  if (isnan(temperature) || isnan(humidity)) {
-    Serial.println("Failed to read from DHT sensor!");
-    delay(2000);
-    return;
+  // ── LED CYCLING (always on, no button needed) ─
+  if (now - lastToggleTime >= TOGGLE_INTERVAL) {
+    lastToggleTime = now;
+    for (int i = 0; i < 3; i++) {
+      setLED(i, i == activeLED);
+    }
+    activeLED = (activeLED + 1) % 3;
   }
 
-  Serial.print("Temperature: ");
-  Serial.print(temperature);
-  Serial.print(" °C  |  Humidity: ");
-  Serial.print(humidity);
-  Serial.println(" %");
-
-  delay(2000);  // DHT11 needs 2 sec delay
+  // ── DHT11 TEMPERATURE (every 2 seconds) ───
+  static unsigned long lastTempTime = 0;
+  if (now - lastTempTime >= 2000) {
+    lastTempTime = now;
+    float temperature = dht.readTemperature();
+    float humidity    = dht.readHumidity();
+    if (!isnan(temperature) && !isnan(humidity)) {
+      Serial.print("Temperature: ");
+      Serial.print(temperature);
+      Serial.print(" °C  |  Humidity: ");
+      Serial.print(humidity);
+      Serial.println(" %");
+    }
+  }
 }
