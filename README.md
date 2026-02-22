@@ -132,6 +132,7 @@ Hardware configuration may vary depending on the microcontroller and sensor conn
 6. Navigate to the project directory and type 'python server.py'
 7. Open the index file on your browser and test the website.
 # Project Structure
+```
 supplyguard/                        ← ROOT (run server.py from here)
 │
 ├── index.html                      ← unchanged
@@ -152,7 +153,7 @@ supplyguard/                        ← ROOT (run server.py from here)
     ├── face_model.h5               ← unchanged
     ├── labels.json                 ← unchanged
     └── realtime_face.py            ← REPLACE with new version
-
+```
 
 
 
