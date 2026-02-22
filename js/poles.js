@@ -161,10 +161,6 @@ socket.on('pole_status', (data) => {
     showPoleAlert(p);
     S.violations++;
 
-    // Auto-navigate to poles page so map is visible
-    const polesNav = document.querySelector('.nav-item[onclick*="poles"]');
-    showPage('poles', polesNav);
-
   } else if (data.status === 'ok' && wasBroken) {
     esp32Log(`[REAL] OK: ${data.pole} voltage=${data.voltage}V`, 't-ok');
     log('OK', `[ESP32] ${data.pole} restored`);
@@ -175,4 +171,3 @@ socket.on('pole_status', (data) => {
   updateOvStats();
   updateNavBadges();
 });
-
