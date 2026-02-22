@@ -128,7 +128,9 @@ Hardware configuration may vary depending on the microcontroller and sensor conn
 2. Right Click on that folder and select EXTRACT ALL .
 3. Open CMD
 4. Install all the python libraries also this model contains some packages which could only run on python 3.10 version...due to which we have to set a virtual environment for the same
-5. pip install tensorflow opencv-python numpy flask flask-socketio requests pillow eventlet
+5. ``` bash
+   pip install tensorflow opencv-python numpy flask flask-socketio requests pillow eventlet
+   ```
 6. Navigate to the project directory and type 'python server.py'
 7. Open the index file on your browser and test the website.
 # Project Structure
