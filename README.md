@@ -132,6 +132,26 @@ Hardware configuration may vary depending on the microcontroller and sensor conn
 5. Navigate to the project directory and type 'python server.py'
 6. Open the index file on your browser and test the website.
 # Project Structure
+supplyguard/                        ← ROOT (run server.py from here)
+│
+├── index.html                      ← unchanged
+├── server.py                       ← PUT HERE (move out of face_recognition_project)
+├── README.md                       ← unchanged
+├── ESP32 code                      ← unchanged
+│
+├── css/
+│   └── styles.css                  ← unchanged
+│
+├── js/
+│   ├── app.js                      ← unchanged
+│   ├── poles.js                    ← unchanged
+│   ├── temperature.js              ← unchanged
+│   └── workers.js                  ← REPLACE with new version
+│
+└── face_recognition_project/
+    ├── face_model.h5               ← unchanged
+    ├── labels.json                 ← unchanged
+    └── realtime_face.py            ← REPLACE with new version
 
 
 
