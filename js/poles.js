@@ -144,28 +144,35 @@ setInterval(() => {
   }
 }, 4000);
 
-// ════════════════════════════════════════
-// REAL ESP32 INTEGRATION:
-// When your Python server.py receives data over serial,
-// it emits a WebSocket event. Connect it here:
-//
-//   const socket = io('http://localhost:5000');
-//
-//   socket.on('pole_status', (data) => {
-//     // data = { pole: 'P-05', status: 'broken', voltage: 0 }
-//     const p = window.S_POLES.find(x => x.id === data.pole);
-//     if (!p) return;
-//     const wasBroken = p.status === 'broken';
-//     p.status = data.status;
-//     if (data.status === 'broken' && !wasBroken) {
-//       esp32Log(`[REAL] ERR: ${data.pole} voltage=${data.voltage}V`, 't-err');
-//       log('ERROR', `[REAL ESP32] Wire break on ${data.pole}`);
-//       notify('danger', `⚡ REAL Break — ${data.pole}`, `ESP32 reports 0V on ${data.pole}`);
-//       showPoleAlert(p);
-//       S.violations++;
-//     }
-//     renderMap(); updateOvStats(); updateNavBadges();
-//   });
-//
-//   socket.on('esp32_log', (data) => esp32Log(`[REAL] ${data.msg}`));
-// ════════════════════════════════════════
+// ── REAL ESP32 POLE INTEGRATION ───────────
+// socket is created in app.js — receives data from server.py serial reader
+socket.on('pole_status', (data) => {
+  // data = { pole: 'P-01', status: 'broken'|'ok', voltage: 0|220 }
+  const p = window.S_POLES.find(x => x.id === data.pole);
+  if (!p) return;
+
+  const wasBroken = p.status === 'broken';
+  p.status = data.status;
+
+  if (data.status === 'broken' && !wasBroken) {
+    esp32Log(`[REAL] ERR: ${data.pole} voltage=${data.voltage}V`, 't-err');
+    log('ERROR', `[ESP32] Wire break on ${data.pole}`);
+    notify('danger', `⚡ ${data.pole} Wire Break`, `ESP32 reports ${data.voltage}V on ${data.pole}`);
+    showPoleAlert(p);
+    S.violations++;
+
+    // Auto-navigate to poles page so map is visible
+    const polesNav = document.querySelector('.nav-item[onclick*="poles"]');
+    showPage('poles', polesNav);
+
+  } else if (data.status === 'ok' && wasBroken) {
+    esp32Log(`[REAL] OK: ${data.pole} voltage=${data.voltage}V`, 't-ok');
+    log('OK', `[ESP32] ${data.pole} restored`);
+  }
+
+  // Always force renderMap regardless of which page is active
+  renderMap();
+  updateOvStats();
+  updateNavBadges();
+});
+
